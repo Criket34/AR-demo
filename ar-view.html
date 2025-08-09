@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ARカメラ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <!-- Three.js（3D描画用ライブラリ） -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <!-- MindAR.js（マーカーベースAR用ライブラリ） -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
+
+  <style>
+    /* ページ全体を余白なしにしてカメラ映像を全画面表示 */
+    body, html { margin: 0; padding: 0; overflow: hidden; }
+    canvas { position: absolute; top: 0; left: 0; }
+  </style>
+</head>
+<body>
+  <!-- ここからJavaScript部分 -->
+  <script type="module">
+    // MindAR付属のGLBモデル読み込み関数をインポート
+    import { loadGLTF } from "https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/utils/loader.js";
+
+    // MindARの基本セットアップ
+    const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+      container: document.body,       // カメラ映像を表示するHTML要素
+      imageTargetSrc: './target.mind' // 複数マーカー情報をまとめたファイル
+    });
+
+    // Three.jsの基本オブジェクトを取得
+    const {renderer, scene, camera} = mindarThree;
+
+    // 光源を追加（3Dモデルを明るく表示するため）
+    const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+    scene.add(light);
+
+    // 4種類のマーカー用のアンカー（マーカー位置情報）を作成
+    const anchors = [
+      mindarThree.addAnchor(0), // マーカー1
+      mindarThree.addAnchor(1), // マーカー2
+      mindarThree.addAnchor(2), // マーカー3
+      mindarThree.addAnchor(3), // マーカー4
+    ];
+
+    // モデルを読み込んでアンカーに追加する関数
+    const loadModelForAnchor = async (anchor, modelPath, scale=0.1) => {
+      const model = await loadGLTF(modelPath);
+      model.scene.scale.set(scale, scale, scale); // モデルの大きさ調整
+      anchor.group.add(model.scene);              // アンカーにモデルを追加
+    };
+
+    // 各アンカーに対応するモデルを読み込み
+    await loadModelForAnchor(anchors[0], './model1.glb');
+    await loadModelForAnchor(anchors[1], './model2.glb');
+    await loadModelForAnchor(anchors[2], './model3.glb');
+    await loadModelForAnchor(anchors[3], './model4.glb');
+
+    // ARセッションを開始
+    await mindarThree.start();
+
+    // 描画ループ
+    renderer.setAnimationLoop(() => {
+      renderer.render(scene, camera);
+    });
+  </script>
+</body>
+</html>
