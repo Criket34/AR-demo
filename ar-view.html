@@ -5,7 +5,7 @@
   <title>ARカメラ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-  <!-- MindAR.js -->
+  <!-- MindAR.js（UMD版）-->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
   <style>
@@ -18,33 +18,44 @@
   import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
   import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
 
-  function loadGLTF(url) {
-    return new Promise((resolve, reject) => {
-      const loader = new GLTFLoader();
-      loader.load(url, gltf => resolve(gltf), undefined, error => reject(error));
+  async function main() {
+    // GLTF読み込み関数
+    function loadGLTF(url) {
+      return new Promise((resolve, reject) => {
+        const loader = new GLTFLoader();
+        loader.load(url, gltf => resolve(gltf), undefined, error => reject(error));
+      });
+    }
+
+    // MindAR設定
+    const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+      container: document.body,
+      imageTargetSrc: './doki-color.mind'
+    });
+
+    const {renderer, scene, camera} = mindarThree;
+
+    // 光源追加
+    const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+    scene.add(light);
+
+    // アンカーとモデル読み込み
+    const anchor = mindarThree.addAnchor(0);
+    const model = await loadGLTF('./doki-color.glb');
+    model.scene.scale.set(0.1, 0.1, 0.1);
+    anchor.group.add(model.scene);
+
+    // AR開始
+    await mindarThree.start();
+
+    // 描画ループ
+    renderer.setAnimationLoop(() => {
+      renderer.render(scene, camera);
     });
   }
 
-  const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-    container: document.body,
-    imageTargetSrc: './doki-color.mind'
-  });
-
-  const {renderer, scene, camera} = mindarThree;
-
-  const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-  scene.add(light);
-
-  const anchor = mindarThree.addAnchor(0);
-  const model = await loadGLTF('./doki-color.glb');
-  model.scene.scale.set(0.1, 0.1, 0.1);
-  anchor.group.add(model.scene);
-
-  await mindarThree.start();
-
-  renderer.setAnimationLoop(() => {
-    renderer.render(scene, camera);
-  });
+  // 実行
+  main();
 </script>
 </body>
 </html>
