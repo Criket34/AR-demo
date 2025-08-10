@@ -5,47 +5,43 @@
   <title>ARカメラ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-  <!-- Three.js（3D描画ライブラリ） -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <!-- MindAR.js（マーカーベースAR用ライブラリ） -->
+  <!-- MindAR.js -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
   <style>
-    /* ページ全体を余白なし＆カメラ映像を全画面表示 */
     body, html { margin: 0; padding: 0; overflow: hidden; }
     canvas { position: absolute; top: 0; left: 0; }
   </style>
 </head>
 <body>
 <script type="module">
-  // MindAR付属のGLTF読み込み関数をインポート
-  import { loadGLTF } from "https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/utils/loader.js";
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+  import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
 
-  // MindARの基本設定
+  function loadGLTF(url) {
+    return new Promise((resolve, reject) => {
+      const loader = new GLTFLoader();
+      loader.load(url, gltf => resolve(gltf), undefined, error => reject(error));
+    });
+  }
+
   const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-    container: document.body,            // カメラ映像を表示する要素
-    imageTargetSrc: './doki-color.mind'  // 土器用マーカー定義ファイル
+    container: document.body,
+    imageTargetSrc: './doki-color.mind'
   });
 
-  // Three.jsのレンダラー・シーン・カメラを取得
   const {renderer, scene, camera} = mindarThree;
 
-  // 光源を追加（モデルが暗くならないように）
   const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
   scene.add(light);
 
-  // マーカー0番（doki-color.mind内で最初に登録されたマーカー）を使用
   const anchor = mindarThree.addAnchor(0);
-
-  // GLBモデルを読み込む
   const model = await loadGLTF('./doki-color.glb');
-  model.scene.scale.set(0.1, 0.1, 0.1); // モデルの大きさ調整
-  anchor.group.add(model.scene);        // マーカー位置にモデルを配置
+  model.scene.scale.set(0.1, 0.1, 0.1);
+  anchor.group.add(model.scene);
 
-  // ARセッション開始
   await mindarThree.start();
 
-  // 描画ループ
   renderer.setAnimationLoop(() => {
     renderer.render(scene, camera);
   });
