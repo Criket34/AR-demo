@@ -11,7 +11,7 @@
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar-js@1.2.3/dist/mindar-image-three.module.js"
+      "mindar-image-three": "https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-three.module.js"
     }
   }
   </script>
@@ -58,14 +58,14 @@
 
       const { renderer, scene, camera } = mindarThree;
 
-      // 照明
+      // 環境光
       const hemi = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1.0);
       scene.add(hemi);
       const dir = new THREE.DirectionalLight(0xffffff, 0.5);
       dir.position.set(0, 1, 0);
       scene.add(dir);
 
-      // GLBローダー
+      // GLB読み込み関数
       const gltfLoader = new GLTFLoader();
       function loadGLB(url) {
         return new Promise((resolve, reject) => {
@@ -112,7 +112,7 @@
       });
 
       window.addEventListener('beforeunload', async () => {
-        try { await mindarThree.stop(); } catch(e){/* ignore */ }
+        try { await mindarThree.stop(); } catch(e){}
       });
     }
 
