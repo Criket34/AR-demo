@@ -4,6 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
+
+  <!-- importmap -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./three/three.module.js",
+      "three/addons/": "./three/jsm/"
+    }
+  }
+  </script>
+
   <style>
     html,body { margin:0; padding:0; height:100%; background:#000; }
     #container { width:100%; height:100vh; overflow:hidden; position:relative; }
@@ -17,12 +28,8 @@
       border-radius: 8px;
       font-family: sans-serif;
     }
+    .hint-img { max-width:120px; display:block; margin-top:8px; }
   </style>
-
-  <!-- ここでUMD版とthree.jsを普通に読み込む -->
-  <script src="./MindAR/mindar-image-three.prod.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
   <div id="container"></div>
@@ -33,10 +40,16 @@
     <div style="font-size:12px; margin-top:6px;">ターゲット：<strong>doki-color</strong></div>
   </div>
 
-  <script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    // MINDARはグローバル読み込みしている想定（後述）
+
     async function main() {
       const container = document.getElementById('container');
 
+      // MINDARのグローバル変数を利用
       const mindarThree = new MINDAR.IMAGE.MindARThree({
         container: container,
         imageTargetSrc: './doki-color.mind',
@@ -52,7 +65,7 @@
       dir.position.set(0, 1, 0);
       scene.add(dir);
 
-      const gltfLoader = new THREE.GLTFLoader();
+      const gltfLoader = new GLTFLoader();
 
       const anchor0 = mindarThree.addAnchor(0);
 
@@ -68,7 +81,7 @@
       }
 
       const startBtn = document.getElementById('startBtn');
-      const stopBtn = document.getElementById('stopBtn');
+      const stopBtn  = document.getElementById('stopBtn');
 
       startBtn.addEventListener('click', async () => {
         try {
@@ -101,5 +114,11 @@
 
     main();
   </script>
+
+  <!-- MINDARのJSファイルをローカルで読み込み（GitHubにアップしたmindar-image-three.prod.jsなど） -->
+  <script src="./MindAR/mindar-image-three.prod.js"></script>
+  <script src="./MindAR/compiler.worker.prod.js"></script>
+  <script src="./MindAR/controller.worker.prod.js"></script>
+
 </body>
 </html>
