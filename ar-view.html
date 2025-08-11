@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
 
-  <!-- importmap: モジュール名を CDN の ESM ファイルにマッピング -->
+  <!-- importmap: モジュール名を CDN の ESM ファイルにマッピングします -->
   <script type="importmap">
   {
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.module.js"
+      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
     }
   }
   </script>
@@ -39,7 +39,6 @@
     <button id="startBtn">カメラ開始</button>
     <button id="stopBtn" disabled>停止</button>
     <div style="font-size:12px; margin-top:6px;">ターゲット：<strong>doki-color</strong></div>
-    <!-- <img class="hint-img" src="./doki-color.png" alt="マーカーの参照画像"> -->
   </div>
 
   <script type="module">
@@ -111,7 +110,7 @@
       });
 
       window.addEventListener('beforeunload', async () => {
-        try { await mindarThree.stop(); } catch(e){/* ignore */ }
+        try { await mindarThree.stop(); } catch(e){}
       });
     }
 
