@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
 
+  <!-- importmap: モジュール名を CDN の ESM ファイルにマッピング -->
   <script type="importmap">
   {
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar-js@1.2.4/dist/mindar-image-three.module.js"
+      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar-js@1.2.3/dist/mindar-image-three.module.js"
     }
   }
   </script>
@@ -64,7 +65,7 @@
       dir.position.set(0, 1, 0);
       scene.add(dir);
 
-      // モデル読み込み
+      // GLBローダー
       const gltfLoader = new GLTFLoader();
       function loadGLB(url) {
         return new Promise((resolve, reject) => {
@@ -87,17 +88,8 @@
       const stopBtn  = document.getElementById('stopBtn');
 
       startBtn.addEventListener('click', async () => {
-        // HTTPSでなければ警告
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-          alert('カメラを使用するにはHTTPS接続が必要です');
-          return;
-        }
-
         try {
-          console.log('カメラ開始要求');
           await mindarThree.start();
-          console.log('カメラ開始成功');
-
           renderer.setAnimationLoop(() => {
             renderer.render(scene, camera);
           });
@@ -105,7 +97,6 @@
           stopBtn.disabled = false;
         } catch(e) {
           console.error('AR開始エラー', e);
-          alert('カメラを開始できませんでした。\nエラー: ' + (e && e.message ? e.message : e));
         }
       });
 
@@ -121,7 +112,7 @@
       });
 
       window.addEventListener('beforeunload', async () => {
-        try { await mindarThree.stop(); } catch(e){}
+        try { await mindarThree.stop(); } catch(e){/* ignore */ }
       });
     }
 
