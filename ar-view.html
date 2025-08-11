@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
 
-  <!-- importmap: モジュール名を CDN の ESM ファイルにマッピングします -->
+  <!-- importmap: モジュール名を CDN の ESM ファイルにマッピング -->
   <script type="importmap">
   {
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.module.js"
+      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar-js@1.2.5/dist/mindar-image-three.module.js"
     }
   }
   </script>
@@ -19,7 +19,6 @@
   <style>
     html,body { margin:0; padding:0; height:100%; background:#000; }
     #container { width:100%; height:100vh; overflow:hidden; position:relative; }
-    /* MindAR が描画する canvas は自動で追加されます */
     .controls {
       position: absolute;
       z-index: 30;
@@ -36,39 +35,33 @@
 <body>
   <div id="container"></div>
 
-  <!-- 簡易UI：カメラ開始/停止ボタン（ワンクッション済みのページを想定）-->
+  <!-- 簡易UI -->
   <div class="controls">
     <button id="startBtn">カメラ開始</button>
     <button id="stopBtn" disabled>停止</button>
     <div style="font-size:12px; margin-top:6px;">ターゲット：<strong>doki-color</strong></div>
-    <!-- （任意）検証用に元画像を表示しておくとテストしやすい -->
     <!-- <img class="hint-img" src="./doki-color.png" alt="マーカーの参照画像"> -->
   </div>
 
   <script type="module">
-    // ESM で three / GLTFLoader / MindAR を import（importmap が解決）
     import * as THREE from 'three';
-    import { GLTFLoader } from 'three/addons/jsm/loaders/GLTFLoader.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MindARThree } from 'mindar-image-three';
 
-    // 非同期メイン処理
     async function main() {
-      // container 要素
       const container = document.getElementById('container');
 
       // MindAR のセットアップ
-      // imageTargetSrc: doki-color.mind（同ディレクトリに配置）
       const mindarThree = new MindARThree({
         container: container,
-        imageTargetSrc: './doki-color.mind', // <- 必ずファイル名を確認（doki-color.mind）
-        // optional: ui options
-        uiLoading: "no",    // MindAR の読み込みUIを無効にする（必要なら yes に）
+        imageTargetSrc: './doki-color.mind', // マーカーの .mind ファイル
+        uiLoading: "no",
         uiScanning: "no"
       });
 
       const { renderer, scene, camera } = mindarThree;
 
-      // lighting
+      // ライティング
       const hemi = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1.0);
       scene.add(hemi);
       const dir = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -77,22 +70,17 @@
 
       // GLTF ローダー
       const gltfLoader = new GLTFLoader();
-
-      // helper: glb を読み込んで Promise を返す
       function loadGLB(url) {
         return new Promise((resolve, reject) => {
           gltfLoader.load(url, gltf => resolve(gltf), undefined, err => reject(err));
         });
       }
 
-      // アンカー（ターゲット0）を作る
+      // アンカー作成（ターゲット0）
       const anchor0 = mindarThree.addAnchor(0);
 
-      // モデル読み込み（doki-color.glb）
-      // ファイル名は小文字・英数字ハイフン推奨（doki-color.glb を想定）
       try {
         const gltf = await loadGLB('./doki-color.glb');
-        // 必要に応じて scale/position を調整してください
         gltf.scene.scale.set(0.1, 0.1, 0.1);
         gltf.scene.position.set(0, 0, 0);
         anchor0.group.add(gltf.scene);
@@ -100,13 +88,13 @@
         console.error('GLB読み込みエラー', err);
       }
 
-      // UI ボタン
+      // UI
       const startBtn = document.getElementById('startBtn');
       const stopBtn  = document.getElementById('stopBtn');
 
       startBtn.addEventListener('click', async () => {
         try {
-          await mindarThree.start();    // カメラアクセスを要求して AR を開始
+          await mindarThree.start();
           renderer.setAnimationLoop(() => {
             renderer.render(scene, camera);
           });
@@ -128,13 +116,11 @@
         }
       });
 
-      // 終了時のクリーンアップ（ページ遷移など）
       window.addEventListener('beforeunload', async () => {
-        try { await mindarThree.stop(); } catch(e){/* ignore */ }
+        try { await mindarThree.stop(); } catch(e){}
       });
     }
 
-    // 実行
     main();
   </script>
 </body>
