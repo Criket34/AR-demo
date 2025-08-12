@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
+
   <style>
     html,body { margin:0; padding:0; height:100%; background:#000; }
     #container { width:100%; height:100vh; overflow:hidden; position:relative; }
@@ -29,12 +30,14 @@
     <div style="font-size:12px; margin-top:6px;">ターゲット：<strong>doki-color</strong></div>
   </div>
 
-  <!-- three.js（UMD版） -->
-  <script src="./three/three.min.js"></script>
-  <!-- GLTFLoader と BufferGeometryUtils -->
-  <script src="./three/jsm/loaders/GLTFLoader.js"></script>
-  <script src="./three/jsm/utils/BufferGeometryUtils.js"></script>
-  <!-- MindAR（UMD版） -->
+  <!-- three.js UMD版 -->
+  <script src="./build/three.min.js"></script>
+  <!-- GLTFLoader -->
+  <script src="./build/jsm/loaders/GLTFLoader.js"></script>
+  <!-- BufferGeometryUtils（GLTFLoader内で参照される可能性あり） -->
+  <script src="./build/jsm/utils/BufferGeometryUtils.js"></script>
+
+  <!-- MINDAR -->
   <script src="./MindAR/mindar-image-three.prod.js"></script>
   <script src="./MindAR/compiler.worker.prod.js"></script>
   <script src="./MindAR/controller.worker.prod.js"></script>
@@ -59,7 +62,6 @@
       scene.add(dir);
 
       const gltfLoader = new THREE.GLTFLoader();
-
       const anchor0 = mindarThree.addAnchor(0);
 
       try {
