@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
 
+  <!-- importmap -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./build/three.module.js",
+      "three/addons/": "./build/jsm/"
+    }
+  }
+  </script>
+
   <style>
     html,body { margin:0; padding:0; height:100%; background:#000; }
     #container { width:100%; height:100vh; overflow:hidden; position:relative; }
@@ -30,19 +40,13 @@
     <div style="font-size:12px; margin-top:6px;">ターゲット：<strong>doki-color</strong></div>
   </div>
 
-  <!-- three.js UMD版 -->
-  <script src="./build/three.min.js"></script>
-  <!-- GLTFLoader -->
-  <script src="./build/jsm/loaders/GLTFLoader.js"></script>
-  <!-- BufferGeometryUtils（GLTFLoader内で参照される可能性あり） -->
-  <script src="./build/jsm/utils/BufferGeometryUtils.js"></script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-  <!-- MINDAR -->
-  <script src="./MindAR/mindar-image-three.prod.js"></script>
-  <script src="./MindAR/compiler.worker.prod.js"></script>
-  <script src="./MindAR/controller.worker.prod.js"></script>
+    // MINDAR（UMD依存対策）
+    window.THREE = THREE;
 
-  <script>
     async function main() {
       const container = document.getElementById('container');
 
@@ -61,7 +65,7 @@
       dir.position.set(0, 1, 0);
       scene.add(dir);
 
-      const gltfLoader = new THREE.GLTFLoader();
+      const gltfLoader = new GLTFLoader();
       const anchor0 = mindarThree.addAnchor(0);
 
       try {
@@ -103,11 +107,17 @@
       });
 
       window.addEventListener('beforeunload', async () => {
-        try { await mindarThree.stop(); } catch (e) {}
+        try { await mindarThree.stop(); } catch (e) { /* ignore */ }
       });
     }
 
     main();
   </script>
+
+  <!-- MINDARのJSファイル（UMD形式） -->
+  <script src="./MindAR/mindar-image-three.prod.js"></script>
+  <script src="./MindAR/compiler.worker.prod.js"></script>
+  <script src="./MindAR/controller.worker.prod.js"></script>
+
 </body>
 </html>
