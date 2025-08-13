@@ -2,49 +2,51 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR表示</title>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <title>MindAR GLB Marker Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #startButton {
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      font-size: 18px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+  </style>
 </head>
 <body>
-  <script>
-    // URLパラメータからモデル番号を取得
-    const params = new URLSearchParams(window.location.search);
-    const modelId = params.get("model");
-
-    // モデルとマーカーの対応表
-    const modelMap = {
-      "1": { marker: "markers/marker1.mind", model: "models/model1.glb" },
-      "2": { marker: "markers/marker2.mind", model: "models/model2.glb" },
-      "3": { marker: "markers/marker3.mind", model: "models/model3.glb" },
-      "4": { marker: "markers/marker4.mind", model: "models/model4.glb" }
-    };
-
-    // 選択されたデータ
-    const selected = modelMap[modelId] || modelMap["1"];
-  </script>
+  <button id="startButton">AR開始</button>
 
   <a-scene
-    mindar-image="imageTargetSrc: "
+    mindar-image="imageTargetSrc: ./marker.mind; autoStart: false;"
+    embedded
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    embedded
   >
     <a-assets>
-      <a-asset-item id="modelGLB" src=""></a-asset-item>
+      <a-asset-item id="model" src="./model.glb"></a-asset-item>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-gltf-model rotation="0 0 0" position="0 -0.5 0" scale="0.5 0.5 0.5" src="#modelGLB"></a-gltf-model>
+      <a-gltf-model src="#model" scale="0.5 0.5 0.5" position="0 0 0"></a-gltf-model>
     </a-entity>
   </a-scene>
 
   <script>
-    // 動的にモデルとマーカーをセット
-    document.querySelector("a-scene").setAttribute("mindar-image", `imageTargetSrc: ${selected.marker}`);
-    document.querySelector("#modelGLB").setAttribute("src", selected.model);
+    const startButton = document.getElementById("startButton");
+    startButton.addEventListener("click", () => {
+      startButton.style.display = "none";
+      document.querySelector("a-scene").components["mindar-image"].start();
+    });
   </script>
 </body>
 </html>
