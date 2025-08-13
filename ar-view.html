@@ -2,14 +2,17 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>MindAR GLB Marker Test</title>
+  <title>ARカメラ（doki-color）</title>
+  <!-- A-Frame本体 -->
   <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+  <!-- MindAR (A-Frame版) -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; background: black; }
     #startButton {
       position: absolute;
-      top: 10px; left: 50%;
+      top: 10px;
+      left: 50%;
       transform: translateX(-50%);
       padding: 10px 20px;
       font-size: 18px;
@@ -18,6 +21,7 @@
       border: none;
       cursor: pointer;
       z-index: 10;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -25,27 +29,40 @@
   <button id="startButton">AR開始</button>
 
   <a-scene
-    mindar-image="imageTargetSrc: ./marker.mind; autoStart: false;"
+    mindar-image="imageTargetSrc: ./doki-color.mind; autoStart: false;"
     embedded
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
   >
+    <!-- モデル読み込み -->
     <a-assets>
-      <a-asset-item id="model" src="./model.glb"></a-asset-item>
+      <a-asset-item id="dokiModel" src="./doki-color.glb"></a-asset-item>
     </a-assets>
 
+    <!-- カメラ -->
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
+    <!-- マーカー認識時に表示するモデル -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-gltf-model src="#model" scale="0.5 0.5 0.5" position="0 0 0"></a-gltf-model>
+      <a-gltf-model src="#dokiModel"
+        scale="0.1 0.1 0.1"
+        position="0 0 0">
+      </a-gltf-model>
     </a-entity>
   </a-scene>
 
   <script>
     const startButton = document.getElementById("startButton");
-    startButton.addEventListener("click", () => {
-      startButton.style.display = "none";
-      document.querySelector("a-scene").components["mindar-image"].start();
+    const sceneEl = document.querySelector("a-scene");
+
+    // A-Frameのコンポーネント初期化完了後にスタート処理をセット
+    sceneEl.addEventListener("loaded", () => {
+      const mindarComponent = sceneEl.components["mindar-image"];
+
+      startButton.addEventListener("click", () => {
+        startButton.style.display = "none"; // ボタンを非表示
+        mindarComponent.start(); // カメラとAR開始
+      });
     });
   </script>
 </body>
