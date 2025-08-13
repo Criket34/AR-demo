@@ -3,33 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>ARカメラ（doki-color）</title>
-  <!-- A-Frame本体 -->
+  <!-- A-Frame -->
   <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
   <!-- MindAR (A-Frame版) -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
   <style>
     body { margin: 0; overflow: hidden; background: black; }
-    #startButton {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 20px;
-      font-size: 18px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: none;
-      cursor: pointer;
-      z-index: 10;
-      border-radius: 6px;
-    }
   </style>
 </head>
 <body>
-  <button id="startButton">AR開始</button>
 
   <a-scene
-    mindar-image="imageTargetSrc: ./doki-color.mind; autoStart: false;"
+    mindar-image="imageTargetSrc: ./doki-color.mind; autoStart: true;"
     embedded
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
@@ -51,19 +36,5 @@
     </a-entity>
   </a-scene>
 
-  <script>
-    const startButton = document.getElementById("startButton");
-    const sceneEl = document.querySelector("a-scene");
-
-    // A-Frameのコンポーネント初期化完了後にスタート処理をセット
-    sceneEl.addEventListener("loaded", () => {
-      const mindarComponent = sceneEl.components["mindar-image"];
-
-      startButton.addEventListener("click", () => {
-        startButton.style.display = "none"; // ボタンを非表示
-        mindarComponent.start(); // カメラとAR開始
-      });
-    });
-  </script>
 </body>
 </html>
