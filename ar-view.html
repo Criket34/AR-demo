@@ -1,123 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
-  <title>ARカメラ（doki-colorテスト）</title>
-
-  <!-- importmap -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "./build/three.module.js",
-      "three/addons/": "./build/jsm/"
-    }
-  }
-  </script>
-
-  <style>
-    html,body { margin:0; padding:0; height:100%; background:#000; }
-    #container { width:100%; height:100vh; overflow:hidden; position:relative; }
-    .controls {
-      position: absolute;
-      z-index: 30;
-      left: 12px;
-      top: 12px;
-      background: rgba(255,255,255,0.9);
-      padding: 8px 10px;
-      border-radius: 8px;
-      font-family: sans-serif;
-    }
-    .hint-img { max-width:120px; display:block; margin-top:8px; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR表示</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
-  <div id="container"></div>
+  <script>
+    // URLパラメータからモデル番号を取得
+    const params = new URLSearchParams(window.location.search);
+    const modelId = params.get("model");
 
-  <div class="controls">
-    <button id="startBtn">カメラ開始</button>
-    <button id="stopBtn" disabled>停止</button>
-    <div style="font-size:12px; margin-top:6px;">ターゲット：<strong>doki-color</strong></div>
-  </div>
+    // モデルとマーカーの対応表
+    const modelMap = {
+      "1": { marker: "markers/marker1.mind", model: "models/model1.glb" },
+      "2": { marker: "markers/marker2.mind", model: "models/model2.glb" },
+      "3": { marker: "markers/marker3.mind", model: "models/model3.glb" },
+      "4": { marker: "markers/marker4.mind", model: "models/model4.glb" }
+    };
 
-  <script type="module">
-    import * as THREE from 'three';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-    // MINDAR（UMD依存対策）
-    window.THREE = THREE;
-
-    async function main() {
-      const container = document.getElementById('container');
-
-      const mindarThree = new MINDAR.IMAGE.MindARThree({
-        container: container,
-        imageTargetSrc: './doki-color.mind',
-        uiLoading: "no",
-        uiScanning: "no"
-      });
-
-      const { renderer, scene, camera } = mindarThree;
-
-      const hemi = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1.0);
-      scene.add(hemi);
-      const dir = new THREE.DirectionalLight(0xffffff, 0.5);
-      dir.position.set(0, 1, 0);
-      scene.add(dir);
-
-      const gltfLoader = new GLTFLoader();
-      const anchor0 = mindarThree.addAnchor(0);
-
-      try {
-        const gltf = await new Promise((resolve, reject) => {
-          gltfLoader.load('./doki-color.glb', resolve, undefined, reject);
-        });
-        gltf.scene.scale.set(0.1, 0.1, 0.1);
-        gltf.scene.position.set(0, 0, 0);
-        anchor0.group.add(gltf.scene);
-      } catch (err) {
-        console.error('GLB読み込みエラー', err);
-      }
-
-      const startBtn = document.getElementById('startBtn');
-      const stopBtn  = document.getElementById('stopBtn');
-
-      startBtn.addEventListener('click', async () => {
-        try {
-          await mindarThree.start();
-          renderer.setAnimationLoop(() => {
-            renderer.render(scene, camera);
-          });
-          startBtn.disabled = true;
-          stopBtn.disabled = false;
-        } catch (e) {
-          console.error('AR開始エラー', e);
-        }
-      });
-
-      stopBtn.addEventListener('click', async () => {
-        try {
-          await mindarThree.stop();
-          renderer.setAnimationLoop(null);
-          startBtn.disabled = false;
-          stopBtn.disabled = true;
-        } catch (e) {
-          console.error('AR停止エラー', e);
-        }
-      });
-
-      window.addEventListener('beforeunload', async () => {
-        try { await mindarThree.stop(); } catch (e) { /* ignore */ }
-      });
-    }
-
-    main();
+    // 選択されたデータ
+    const selected = modelMap[modelId] || modelMap["1"];
   </script>
 
-  <!-- MINDARのJSファイル（UMD形式） -->
-  <script src="./MindAR/mindar-image-three.prod.js"></script>
-  <script src="./MindAR/compiler.worker.prod.js"></script>
-  <script src="./MindAR/controller.worker.prod.js"></script>
+  <a-scene
+    mindar-image="imageTargetSrc: "
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
+  >
+    <a-assets>
+      <a-asset-item id="modelGLB" src=""></a-asset-item>
+    </a-assets>
 
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-gltf-model rotation="0 0 0" position="0 -0.5 0" scale="0.5 0.5 0.5" src="#modelGLB"></a-gltf-model>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    // 動的にモデルとマーカーをセット
+    document.querySelector("a-scene").setAttribute("mindar-image", `imageTargetSrc: ${selected.marker}`);
+    document.querySelector("#modelGLB").setAttribute("src", selected.model);
+  </script>
 </body>
 </html>
