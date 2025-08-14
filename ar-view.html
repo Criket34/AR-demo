@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
-
   <style>
     html, body {
       margin: 0;
@@ -20,11 +19,9 @@
     }
   </style>
 
-  <!-- 1. A-Frame本体（同期読み込み） -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
-  <!-- 2. MindARコア（同期読み込み） -->
+  <!-- MindARコア -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image.prod.js"></script>
-  <!-- 3. MindAR A-Frame拡張（同期読み込み） -->
+  <!-- MindAR A-Frame拡張 -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
@@ -37,11 +34,11 @@
     renderer="precision: highp; antialias: true; alpha: true;"
     id="ar-container"
   >
-    <!-- 環境光と平行光 -->
+    <!-- 環境光 -->
     <a-entity light="type: ambient; color: #ffffff; intensity: 1"></a-entity>
     <a-entity light="type: directional; color: #ffffff; intensity: 0.8" position="0 1 0"></a-entity>
 
-    <!-- ARターゲット0に3Dモデルを表示 -->
+    <!-- ARターゲット -->
     <a-entity mindar-image-target="targetIndex: 0">
       <a-gltf-model
         src="./doki-color.glb"

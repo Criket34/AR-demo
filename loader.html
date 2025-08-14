@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>ARロード中...</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body {
+    background: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: sans-serif;
+  }
+</style>
+<!-- 先にA-Frameだけ読み込む -->
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+</head>
+<body>
+ロード中...
+<script>
+  // A-Frame読み込み完了後に本体ページへ
+  window.addEventListener('load', () => {
+    window.location.href = "ar-view.html";
+  });
+</script>
+</body>
+</html>

@@ -3,34 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR体験 目次</title>
+  <title>AR起動</title>
   <style>
-    /* ページ全体の基本デザイン */
     body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f0f0;
       font-family: sans-serif;
-      text-align: center; /* 中央寄せ */
-      padding: 50px;
     }
-    /* ボタン風リンクのデザイン */
-    a.button {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 15px 30px;
-      font-size: 18px;
-      background-color: #4CAF50;
+    .btn {
+      background: #007bff;
       color: white;
-      text-decoration: none;
+      padding: 14px 28px;
+      font-size: 18px;
+      border: none;
       border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
-  <!-- タイトル -->
-  <h1>AR体験</h1>
-  <!-- 簡単な説明 -->
-  <p>下のボタンを押すとカメラが起動します。</p>
-
-  <!-- ARカメラページ（ar-view.html）へのリンク -->
-  <a class="button" href="ar-view.html">ARを開始する</a>
+  <button class="btn" onclick="location.href='loader.html'">AR開始</button>
 </body>
 </html>
