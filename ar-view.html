@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ARカメラ（doki-colorテスト）</title>
+
   <style>
     html, body {
       margin: 0;
@@ -19,10 +20,10 @@
     }
   </style>
 
-  <!-- MindARコア -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image.prod.js"></script>
-  <!-- MindAR A-Frame拡張 -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
+  <!-- 1. A-Frame本体 -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <!-- 2. MindAR A-Frame拡張（コア込み） -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
   <a-scene
@@ -34,14 +35,19 @@
     renderer="precision: highp; antialias: true; alpha: true;"
     id="ar-container"
   >
-    <!-- 環境光 -->
+    <!-- アセットのプリロード -->
+    <a-assets>
+      <a-asset-item id="model-doki" src="./doki-color.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- 環境光と平行光 -->
     <a-entity light="type: ambient; color: #ffffff; intensity: 1"></a-entity>
     <a-entity light="type: directional; color: #ffffff; intensity: 0.8" position="0 1 0"></a-entity>
 
-    <!-- ARターゲット -->
+    <!-- ARターゲット0に3Dモデルを表示 -->
     <a-entity mindar-image-target="targetIndex: 0">
       <a-gltf-model
-        src="./doki-color.glb"
+        src="#model-doki"
         scale="0.1 0.1 0.1"
         position="0 0 0"
         rotation="0 0 0"
