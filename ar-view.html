@@ -27,13 +27,14 @@
 </head>
 <body>
   <a-scene
-    mindar-image="imageTargetSrc: ./doki-color.mind; autoStart: true;"
+    mindar-image="imageTargetSrc: ./doki-color.mind; autoStart: true; uiScanning: true; uiLoading: true;"
     embedded
     color-space="sRGB"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    renderer="precision: highp; antialias: true; alpha: true;"
+    renderer="precision: mediump; antialias: true; alpha: true;"
     id="ar-container"
+    playsinline
   >
     <!-- アセットのプリロード -->
     <a-assets>
@@ -56,7 +57,12 @@
     </a-entity>
 
     <!-- カメラ -->
-    <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false"></a-camera>
+    <a-camera 
+      position="0 0 0" 
+      look-controls="enabled: false" 
+      cursor="fuse: false"
+      playsinline="true">
+    </a-camera>
   </a-scene>
 </body>
 </html>
