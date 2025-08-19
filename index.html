@@ -2,32 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AR起動</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
       background: #f0f0f0;
-      font-family: sans-serif;
     }
-    .btn {
-      background: #007bff;
-      color: white;
-      padding: 14px 28px;
-      font-size: 18px;
+    button {
+      padding: 1em 2em;
+      font-size: 1.2em;
       border: none;
       border-radius: 8px;
+      background: #007bff;
+      color: white;
       cursor: pointer;
     }
-    .btn:hover {
+    button:hover {
       background: #0056b3;
     }
   </style>
 </head>
 <body>
-  <button class="btn" onclick="location.href='ar-view.html'">AR開始</button>
+  <button onclick="location.href='ar-view.html'">ARを開始</button>
 </body>
 </html>
