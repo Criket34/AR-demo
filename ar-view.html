@@ -27,16 +27,14 @@
 <body>
   <!-- ARシーン -->
   <a-scene
-    mindar-image="imageTargetSrc: ./doki-color.mind; autoStart: true;"
-    color-space="sRGB"
+    mindar-image="imageTargetSrc: /doki-color.mind; autoStart: true;"
     embedded
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    renderer="precision: highp; antialias: true; alpha: true;"
   >
     <!-- アセットのプリロード -->
     <a-assets>
-      <a-asset-item id="model-doki" src="./doki-color.glb"></a-asset-item>
+      <a-asset-item id="model-doki" src="/doki-color.glb"></a-asset-item>
     </a-assets>
 
     <!-- 環境光と平行光 -->
