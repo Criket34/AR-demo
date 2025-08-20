@@ -8,13 +8,19 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <!-- AR.js for A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
+  <style>
+    /* カメラ映像のズームを抑える（Androidで特に有効） */
+    video {
+      object-fit: contain !important;
+    }
+  </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true;"
-    arjs="sourceType: webcam; debugUIEnabled: false;">
+    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:720; debugUIEnabled: false;">
     
     <!-- 独自マーカー -->
     <a-marker type="pattern" url="doki-color.patt">
@@ -38,7 +44,7 @@
       sceneEl.addEventListener("loaded", () => {
         const camera = sceneEl.camera; // A-Frameが生成したthree.jsカメラ
         if (camera) {
-          camera.fov = 150; // ← ここで視野角を設定（数値を大きくすると広角になる）
+          camera.fov = 120; // ← 数値を調整して自然な広角に（例: 100〜150）
           camera.updateProjectionMatrix();
           console.log("Camera FOV set to:", camera.fov);
         }
