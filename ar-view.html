@@ -38,7 +38,7 @@
       sceneEl.addEventListener("loaded", () => {
         const camera = sceneEl.camera; // A-Frameが生成したthree.jsカメラ
         if (camera) {
-          camera.fov = 75; // ← ここで視野角を設定（数値を大きくすると広角になる）
+          camera.fov = 150; // ← ここで視野角を設定（数値を大きくすると広角になる）
           camera.updateProjectionMatrix();
           console.log("Camera FOV set to:", camera.fov);
         }
