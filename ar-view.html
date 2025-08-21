@@ -9,9 +9,8 @@
   <!-- AR.js for A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
   <style>
-    /* カメラ映像のズームを抑える（Androidで特に有効） */
     video {
-      object-fit: contain !important;
+      object-fit: contain !important; /* Android の過剰ズームを防止 */
     }
   </style>
 </head>
@@ -20,9 +19,12 @@
     embedded
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true;"
-    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:720; debugUIEnabled: false;">
-    
-    <!-- 独自マーカー -->
+    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:720;
+          debugUIEnabled: false;
+          trackingMethod: best;
+          enableCameraParameters: false;"> <!-- ★ カメラ補正をオフ -->
+
+    <!-- マーカー認識だけ使う -->
     <a-marker type="pattern" url="doki-color.patt">
       <a-entity 
         gltf-model="url(doki-color.glb)" 
@@ -32,42 +34,36 @@
       </a-entity>
     </a-marker>
 
-    <!-- カメラ -->
-    <a-entity camera></a-entity>
+    <!-- 自分のカメラを使う -->
+    <a-camera id="myCamera" position="0 0 5"></a-camera>
   </a-scene>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const sceneEl = document.querySelector("a-scene");
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sceneEl = document.querySelector("a-scene");
 
-    sceneEl.addEventListener("arReady", () => {
-      console.log("AR.js is ready, fixing camera constraints...");
+      sceneEl.addEventListener("arReady", () => {
+        console.log("AR.js is ready, camera override active.");
 
-      // AR.js が作成した video 要素を取得
-      const video = document.querySelector("video");
-      if (video && video.srcObject) {
-        const track = video.srcObject.getVideoTracks()[0];
-        const capabilities = track.getCapabilities();
-        console.log("Camera capabilities:", capabilities);
-
-        // 再設定したい制約
-        const constraints = {
-          advanced: [{
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            aspectRatio: { ideal: 16/9 }
-          }]
-        };
-
-        track.applyConstraints(constraints).then(() => {
-          console.log("Camera constraints reapplied:", constraints);
-        }).catch(err => {
-          console.warn("Failed to applyConstraints:", err);
-        });
-      }
+        const video = document.querySelector("video");
+        if (video && video.srcObject) {
+          const track = video.srcObject.getVideoTracks()[0];
+          if (track) {
+            const constraints = {
+              facingMode: "environment",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              aspectRatio: { ideal: 16/9 }
+            };
+            track.applyConstraints(constraints).then(() => {
+              console.log("Custom constraints applied:", constraints);
+            }).catch(err => {
+              console.warn("applyConstraints failed:", err);
+            });
+          }
+        }
+      });
     });
-  });
-</script>
+  </script>
 </body>
 </html>
