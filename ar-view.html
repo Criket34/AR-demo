@@ -36,20 +36,38 @@
     <a-entity camera></a-entity>
   </a-scene>
 
-  <!-- カメラのFOVを調整するスクリプト -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const sceneEl = document.querySelector("a-scene");
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const sceneEl = document.querySelector("a-scene");
 
-      sceneEl.addEventListener("loaded", () => {
-        const camera = sceneEl.camera; // A-Frameが生成したthree.jsカメラ
-        if (camera) {
-          camera.fov = 120; // ← 数値を調整して自然な広角に（例: 100〜150）
-          camera.updateProjectionMatrix();
-          console.log("Camera FOV set to:", camera.fov);
-        }
-      });
+    sceneEl.addEventListener("arReady", () => {
+      console.log("AR.js is ready, fixing camera constraints...");
+
+      // AR.js が作成した video 要素を取得
+      const video = document.querySelector("video");
+      if (video && video.srcObject) {
+        const track = video.srcObject.getVideoTracks()[0];
+        const capabilities = track.getCapabilities();
+        console.log("Camera capabilities:", capabilities);
+
+        // 再設定したい制約
+        const constraints = {
+          advanced: [{
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            aspectRatio: { ideal: 16/9 }
+          }]
+        };
+
+        track.applyConstraints(constraints).then(() => {
+          console.log("Camera constraints reapplied:", constraints);
+        }).catch(err => {
+          console.warn("Failed to applyConstraints:", err);
+        });
+      }
     });
-  </script>
+  });
+</script>
 </body>
 </html>
