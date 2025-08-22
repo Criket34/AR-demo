@@ -19,53 +19,49 @@
     embedded
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true;"
-    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:720; debugUIEnabled: false;">
+    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:720;
+          debugUIEnabled: false;
+          trackingMethod: best;
+          enableCameraParameters: false;"> <!-- ★ カメラ補正をオフ -->
 
-    <!-- ★ マーカーはオブジェクトを持たせず、姿勢検出だけ使う -->
-    <a-marker id="marker" type="pattern" url="doki-color.patt"></a-marker>
-
-    <!-- 自前のアンカー（マーカー姿勢を適用する） -->
-    <a-entity id="markerAnchor">
+    <!-- マーカー認識だけ使う -->
+    <a-marker type="pattern" url="doki-color.patt">
       <a-entity 
         gltf-model="url(doki-color.glb)" 
         scale="0.5 0.5 0.5" 
         position="0 0 0" 
         rotation="0 180 0">
       </a-entity>
-    </a-entity>
+    </a-marker>
 
-    <!-- 自分のカメラ -->
+    <!-- 自分のカメラを使う -->
     <a-camera id="myCamera" position="0 0 5"></a-camera>
   </a-scene>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const markerEl = document.querySelector("#marker");
-      const anchorEl = document.querySelector("#markerAnchor");
+      const sceneEl = document.querySelector("a-scene");
 
-      // マーカー検出時にオブジェクトを表示
-      markerEl.addEventListener("markerFound", () => {
-        console.log("Marker found");
-        anchorEl.object3D.visible = true;
-      });
+      sceneEl.addEventListener("arReady", () => {
+        console.log("AR.js is ready, camera override active.");
 
-      // マーカーを見失ったら非表示
-      markerEl.addEventListener("markerLost", () => {
-        console.log("Marker lost");
-        anchorEl.object3D.visible = false;
-      });
-
-      // 毎フレーム、マーカーの姿勢をコピー
-      markerEl.addEventListener("markerFound", () => {
-        const tick = () => {
-          if (markerEl.object3D.visible) {
-            anchorEl.object3D.position.copy(markerEl.object3D.position);
-            anchorEl.object3D.quaternion.copy(markerEl.object3D.quaternion);
-            anchorEl.object3D.scale.copy(markerEl.object3D.scale);
+        const video = document.querySelector("video");
+        if (video && video.srcObject) {
+          const track = video.srcObject.getVideoTracks()[0];
+          if (track) {
+            const constraints = {
+              facingMode: "environment",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              aspectRatio: { ideal: 16/9 }
+            };
+            track.applyConstraints(constraints).then(() => {
+              console.log("Custom constraints applied:", constraints);
+            }).catch(err => {
+              console.warn("applyConstraints failed:", err);
+            });
           }
-          requestAnimationFrame(tick);
-        };
-        tick();
+        }
       });
     });
   </script>
