@@ -1,66 +1,67 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AR表示</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- A-Frame -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <!-- AR.js for A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
   <style>
-    video {
-      object-fit: contain !important; /* Android の過剰ズームを防止 */
-    }
+    html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
+    a-scene { position: fixed; inset: 0; width: 100vw !important; height: 100vh !important; }
+    video, canvas { width:100vw !important; height:100vh !important; object-fit:contain !important; }
   </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
+<body>
+  <!-- Android 背面カメラ用 video -->
+  <video id="cameraVideo" autoplay playsinline muted style="display:none;"></video>
+
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true;"
-    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:720;
-          debugUIEnabled: false;
-          trackingMethod: best;
-          enableCameraParameters: false;"> <!-- ★ カメラ補正をオフ -->
-
-    <!-- マーカー認識だけ使う -->
+    arjs="sourceType: video; debugUIEnabled: false;">
+    
     <a-marker type="pattern" url="doki-color.patt">
-      <a-entity 
-        gltf-model="url(doki-color.glb)" 
-        scale="0.5 0.5 0.5" 
-        position="0 0 0" 
-        rotation="0 180 0">
-      </a-entity>
+      <a-entity gltf-model="url(doki-color.glb)" scale="0.5 0.5 0.5" position="0 0 0" rotation="0 180 0"></a-entity>
     </a-marker>
 
-    <!-- 自分のカメラを使う -->
-    <a-camera id="myCamera" position="0 0 5"></a-camera>
+    <a-entity camera></a-entity>
   </a-scene>
 
   <script>
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: "environment" } } // 背面カメラ
+        });
+        const videoEl = document.getElementById("cameraVideo");
+        videoEl.srcObject = stream;
+        await videoEl.play();
+
+        // AR.js に既存 video を渡す
+        const sceneEl = document.querySelector("a-scene");
+        sceneEl.addEventListener("loaded", () => {
+          const arSource = sceneEl.components.arjs.source;
+          arSource.domElement = videoEl;
+          arSource.ready = true;
+        });
+
+      } catch(err) {
+        console.error("Camera init failed:", err);
+      }
+    }
+
+    initCamera();
+
+    // FOV 調整（3D表示用）
     document.addEventListener("DOMContentLoaded", () => {
       const sceneEl = document.querySelector("a-scene");
-
-      sceneEl.addEventListener("arReady", () => {
-        console.log("AR.js is ready, camera override active.");
-
-        const video = document.querySelector("video");
-        if (video && video.srcObject) {
-          const track = video.srcObject.getVideoTracks()[0];
-          if (track) {
-            const constraints = {
-              facingMode: "environment",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              aspectRatio: { ideal: 16/9 }
-            };
-            track.applyConstraints(constraints).then(() => {
-              console.log("Custom constraints applied:", constraints);
-            }).catch(err => {
-              console.warn("applyConstraints failed:", err);
-            });
-          }
+      sceneEl.addEventListener("loaded", () => {
+        if(sceneEl.camera){
+          sceneEl.camera.fov = 100;
+          sceneEl.camera.updateProjectionMatrix();
+          console.log("Camera FOV set:", sceneEl.camera.fov);
         }
       });
     });
