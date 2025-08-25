@@ -17,7 +17,7 @@
       top: 0; left: 0;
     }
   </style>
-  <!-- Three.js r148 非モジュール版 -->
+  <!-- Three.js (非モジュール版 r148) -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/GLTFLoader.js"></script>
   <!-- js-aruco -->
@@ -45,13 +45,12 @@
     light.position.set(0, 5, 5).normalize();
     scene.add(light);
 
-    // GLB 読み込み
     let markerObject;
     const loader = new THREE.GLTFLoader();
-    loader.load("doki-color.glb", (gltf) => {
+    loader.load("doki-color.glb", function(gltf){
       markerObject = gltf.scene;
       markerObject.scale.set(0.5, 0.5, 0.5);
-      markerObject.visible = false;
+      markerObject.visible = false; 
       scene.add(markerObject);
     });
 
@@ -78,20 +77,20 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      if(video.readyState === video.HAVE_ENOUGH_DATA) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const markers = detector.detect(imageData);
 
-        if (markers.length > 0 && markerObject) {
+        if(markers.length > 0 && markerObject){
           const corners = markers[0].corners.map(c => ({
-            x: c.x - canvas.width / 2,
-            y: canvas.height / 2 - c.y
+            x: c.x - canvas.width/2,
+            y: canvas.height/2 - c.y
           }));
 
           const pose = posit.pose(corners);
 
-          if (pose.bestError < 50) {
+          if(pose.bestError < 50){
             const rotation = pose.bestRotation;
             const translation = pose.bestTranslation;
 
@@ -99,9 +98,9 @@
 
             // 座標設定
             markerObject.position.set(
-              translation[0] / 100,
-              translation[1] / 100,
-              -translation[2] / 100
+              translation[0]/100,
+              translation[1]/100,
+              -translation[2]/100
             );
 
             // 回転行列 → Three.js Matrix4
@@ -114,7 +113,7 @@
             );
             markerObject.setRotationFromMatrix(m);
           }
-        } else if (markerObject) {
+        } else if(markerObject){
           markerObject.visible = false;
         }
       }
@@ -126,7 +125,7 @@
 
     // リサイズ対応
     window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = window.innerWidth/window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
