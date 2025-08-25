@@ -17,7 +17,7 @@
       top: 0; left: 0;
     }
   </style>
-  <!-- Three.js (r148: 非モジュール版) -->
+  <!-- Three.js r148 非モジュール版 -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/GLTFLoader.js"></script>
   <!-- js-aruco -->
@@ -45,12 +45,13 @@
     light.position.set(0, 5, 5).normalize();
     scene.add(light);
 
+    // GLB 読み込み
     let markerObject;
     const loader = new THREE.GLTFLoader();
     loader.load("doki-color.glb", (gltf) => {
       markerObject = gltf.scene;
       markerObject.scale.set(0.5, 0.5, 0.5);
-      markerObject.visible = false; 
+      markerObject.visible = false;
       scene.add(markerObject);
     });
 
