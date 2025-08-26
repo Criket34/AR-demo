@@ -2,134 +2,16 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>js-aruco + Three.js AR Demo</title>
-  <style>
-    body { margin: 0; overflow: hidden; background: #000; }
-    #video {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: -1;
-    }
-    canvas {
-      position: absolute;
-      top: 0; left: 0;
-    }
-  </style>
-
-  <!-- Three.js 非モジュール版（r128） -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-
-  <!-- js-aruco -->
-  <script src="https://cdn.jsdelivr.net/gh/jcmellado/js-aruco/build/aruco.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/jcmellado/js-aruco/build/posit1.js"></script>
+  <title>MindAR AR Demo</title>
+  <link rel="stylesheet" href="ar-view2.css">
 </head>
 <body>
-  <video id="video" autoplay playsinline muted></video>
-  <canvas id="canvas"></canvas>
+  <div id="control">
+    <button id="startButton">Start</button>
+    <button id="stopButton">Stop</button>
+  </div>
+  <div id="container"></div>
 
-  <script>
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-
-    // === Three.js セットアップ ===
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.z = 5;
-
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(0, 5, 5).normalize();
-    scene.add(light);
-
-    // === GLTF ロード ===
-    let markerObject;
-    const loader = new THREE.GLTFLoader();
-    loader.load("doki-color.glb", (gltf) => {
-      markerObject = gltf.scene;
-      markerObject.scale.set(0.5, 0.5, 0.5);
-      markerObject.visible = false;
-      scene.add(markerObject);
-    });
-
-    // === js-aruco セットアップ ===
-    const detector = new AR.Detector();
-    let posit;
-
-    function startCamera() {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => {
-          video.srcObject = stream;
-          video.onloadedmetadata = () => {
-            video.play();
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            posit = new POS.Posit(35, video.videoWidth); // マーカーサイズ(mm), カメラ幅(px)
-            animate();
-          };
-        })
-        .catch(err => console.error("Camera error:", err));
-    }
-
-    // === メインループ ===
-    function animate() {
-      requestAnimationFrame(animate);
-
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const markers = detector.detect(imageData);
-
-        if (markers.length > 0 && markerObject) {
-          const corners = markers[0].corners.map(c => ({
-            x: c.x - canvas.width / 2,
-            y: canvas.height / 2 - c.y
-          }));
-
-          const pose = posit.pose(corners);
-
-          if (pose.bestError < 50) {
-            const rotation = pose.bestRotation;
-            const translation = pose.bestTranslation;
-
-            markerObject.visible = true;
-            markerObject.position.set(
-              translation[0] / 100,
-              translation[1] / 100,
-              -translation[2] / 100
-            );
-
-            const m = new THREE.Matrix4();
-            m.set(
-              rotation[0][0], rotation[0][1], rotation[0][2], 0,
-              rotation[1][0], rotation[1][1], rotation[1][2], 0,
-              rotation[2][0], rotation[2][1], rotation[2][2], 0,
-              0, 0, 0, 1
-            );
-            markerObject.setRotationFromMatrix(m);
-          }
-        } else if (markerObject) {
-          markerObject.visible = false;
-        }
-      }
-
-      renderer.render(scene, camera);
-    }
-
-    startCamera();
-
-    // ウィンドウリサイズ対応
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+  <script type="module" src="ar-view2.js"></script>
 </body>
 </html>
