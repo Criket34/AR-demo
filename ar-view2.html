@@ -10,27 +10,27 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
       object-fit: cover;
-      z-index: -1; /* Three.js の後ろに置く */
+      z-index: -1;
     }
     canvas {
       position: absolute;
       top: 0; left: 0;
     }
   </style>
+
+  <!-- ✅ Three.js r128（非モジュール版）-->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- ✅ js-aruco -->
+  <script src="https://cdn.jsdelivr.net/gh/jcmellado/js-aruco/build/aruco.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jcmellado/js-aruco/build/posit1.js"></script>
 </head>
 <body>
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas"></canvas>
 
-  <!-- Three.js（モジュール版をCDNから直読み） -->
-  <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js";
-    import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/loaders/GLTFLoader.js";
-
-    // ===== js-aruco 読み込み =====
-    import "https://cdn.jsdelivr.net/gh/jcmellado/js-aruco/build/aruco.js";
-    import "https://cdn.jsdelivr.net/gh/jcmellado/js-aruco/build/posit1.js";
-
+  <script>
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -48,8 +48,9 @@
     light.position.set(0, 5, 5).normalize();
     scene.add(light);
 
+    // ========== GLTF ロード ==========
     let markerObject;
-    const loader = new GLTFLoader();
+    const loader = new THREE.GLTFLoader();
     loader.load("doki-color.glb", (gltf) => {
       markerObject = gltf.scene;
       markerObject.scale.set(0.5, 0.5, 0.5);
@@ -124,6 +125,7 @@
 
     startCamera();
 
+    // ウィンドウリサイズ対応
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
