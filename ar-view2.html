@@ -9,10 +9,10 @@
     #video {
       position:fixed; inset:0;
       width:100vw; height:100vh;
-      object-fit: contain;  /* 望遠化しにくい表示 */
-      z-index:-1;           /* 3Dより背面 */
+      object-fit: contain;
+      z-index:-1;
     }
-    #detectorCanvas { display:none; } /* 検出用だけに使うので非表示 */
+    #detectorCanvas { display:none; }
   </style>
   <!-- js-aruco（グローバル） -->
   <script src="https://cdn.jsdelivr.net/gh/jcmellado/js-aruco/build/aruco.js"></script>
@@ -22,7 +22,7 @@
   <video id="video" autoplay playsinline muted></video>
   <canvas id="detectorCanvas"></canvas>
 
-  <!-- 以降は ES Modules（GLTFLoader を import する） -->
+  <!-- Three.js + GLTFLoader を ES Module で読み込む -->
   <script type="module">
     import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js";
     import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/loaders/GLTFLoader.js";
@@ -48,7 +48,7 @@
     dir.position.set(0, 2, 3);
     scene.add(dir);
 
-    // GLB 読み込み（GLTFLoader は import したクラスを new する）
+    // GLB 読み込み
     let markerObject = null;
     const loader = new GLTFLoader();
     loader.load("doki-color.glb",
@@ -69,17 +69,13 @@
     async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: "environment" },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
         });
         video.srcObject = stream;
         await video.play();
 
         resizeAll();
-        posit = new POS.Posit(35, canvas.width); // 35mm はマーカー物理サイズ（適宜調整）
+        posit = new POS.Posit(35, canvas.width);
         animate();
       } catch (e) {
         console.error("Camera error:", e);
@@ -87,40 +83,27 @@
     }
 
     function resizeAll() {
-      // 検出用キャンバスはビデオの実サイズに合わせる
       const w = video.videoWidth || 640;
       const h = video.videoHeight || 480;
       canvas.width = w;
       canvas.height = h;
 
-      // レンダラー＆カメラは画面サイズ
       renderer.setSize(window.innerWidth, window.innerHeight);
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
     }
 
-    window.addEventListener("resize", () => {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-    });
+    window.addEventListener("resize", resizeAll);
 
     function animate() {
       requestAnimationFrame(animate);
 
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        // 必要なら動画サイズ変化に追従
-        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-          resizeAll();
-          if (!posit) posit = new POS.Posit(35, canvas.width);
-        }
-
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const markers = detector.detect(imageData);
 
         if (markers.length > 0 && markerObject) {
-          // 先頭マーカーで姿勢推定
           const corners = markers[0].corners.map(p => ({
             x: p.x - canvas.width / 2,
             y: canvas.height / 2 - p.y
