@@ -1,27 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>MindAR AR Demo</title>
-  <link rel="stylesheet" href="ar-view2.css">
+  <meta charset="UTF-8">
+  <title>MindAR AR Demo</title>
+  <link rel="stylesheet" href="ar-view2.css">
 </head>
 <body>
-  <div id="control">
-    <button id="startButton">Start</button>
-    <button id="stopButton">Stop</button>
-  </div>
-  <div id="container"></div>
+  <div id="control">
+    <button id="startButton">Start</button>
+    <button id="stopButton">Stop</button>
+  </div>
+  <div id="container"></div>
 
-    <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-      }
-    }
-  </script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
+<script src="ar-view2.js"></script>
 
-    <script type="module" src="ar-view2.js"></script>
 </body>
 </html>
