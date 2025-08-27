@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js + A-Frame 簡易サンプル</title>
+  <title>AR.js + A-Frame サンプル</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -13,20 +13,20 @@
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false;">
+    arjs="sourceType: webcam; debugUIEnabled: false; cameraParameters: camera_para.dat;">
     
     <!-- マーカー（doki-color.patt を利用） -->
     <a-marker type="pattern" url="doki-color.patt">
       <a-entity
         gltf-model="url(doki-color.glb)"
-        scale="0.5 0.5 0.5"
+        scale="0.2 0.2 0.2"
         rotation="0 180 0"
         position="0 0 0">
       </a-entity>
     </a-marker>
 
-    <!-- カメラ -->
-    <a-entity camera></a-entity>
+    <!-- カメラを自前で制御 -->
+    <a-entity camera="fov: 70; near: 0.01; far: 1000" position="0 0 0"></a-entity>
   </a-scene>
 </body>
 </html>
