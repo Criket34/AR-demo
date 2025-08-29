@@ -13,7 +13,8 @@
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false; cameraParameters: camera_para.dat;">
+    arjs="sourceType: webcam; debugUIEnabled: false; cameraParameters: camera_para.dat;"
+    id="scene">
     
     <!-- マーカー（doki-color.patt を利用） -->
     <a-marker type="pattern" url="doki-color.patt">
@@ -25,8 +26,19 @@
       </a-entity>
     </a-marker>
 
-    <!-- カメラを自前で制御 -->
-    <a-entity camera="fov: 70; near: 0.01; far: 1000" position="0 0 0"></a-entity>
+    <!-- カメラ -->
+    <a-entity camera id="camera" position="0 0 0"></a-entity>
   </a-scene>
+
+  <script>
+    // シーンがロードされた後にカメラのFOVを上書き
+    document.querySelector('#scene').addEventListener('loaded', () => {
+      const camera = document.querySelector('#camera').getObject3D('camera');
+      if (camera) {
+        camera.fov = 70; // ズームされない画角にリセット
+        camera.updateProjectionMatrix();
+      }
+    });
+  </script>
 </body>
 </html>
