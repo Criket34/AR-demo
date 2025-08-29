@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>AR.js + A-Frame サンプル（スマホ用 見栄え優先・FOV固定）</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ★ viewport を Android 用に強化指定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+    maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densityDpi=device-dpi">
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <!-- AR.js for A-Frame -->
