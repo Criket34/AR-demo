@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js + A-Frame サンプル（スマホ用 見栄え優先）</title>
+  <title>AR.js + A-Frame サンプル（スマホ用 見栄え優先・FOV固定）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -27,9 +27,25 @@
       </a-entity>
     </a-marker>
 
-    <!-- カメラ（AR.js専用のカメラを利用することでズーム問題を回避） -->
-    <a-marker-camera></a-marker-camera>
+    <!-- カメラ（FOVを常に80に固定する） -->
+    <a-entity id="myCamera" camera lock-fov="fov: 80"></a-entity>
 
   </a-scene>
+
+  <script>
+  // FOV固定コンポーネント
+  AFRAME.registerComponent('lock-fov', {
+    schema: { fov: { default: 80 } }, // ← 任意のFOVを指定
+    tick: function () {
+      const cam = this.el.getObject3D('camera');
+      if (cam && cam.isPerspectiveCamera) {
+        if (cam.fov !== this.data.fov) {
+          cam.fov = this.data.fov;
+          cam.updateProjectionMatrix();
+        }
+      }
+    }
+  });
+  </script>
 </body>
 </html>
