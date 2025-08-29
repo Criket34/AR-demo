@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js + A-Frame サンプル（見栄え優先）</title>
+  <title>AR.js + A-Frame サンプル（スマホ用 見栄え優先）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -13,9 +13,10 @@
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true;"
     arjs="sourceType: webcam; debugUIEnabled: false;"
-    id="scene">
-    
+  >
+
     <!-- マーカー -->
     <a-marker type="pattern" url="doki-color.patt">
       <a-entity
@@ -26,18 +27,9 @@
       </a-entity>
     </a-marker>
 
-    <!-- カメラ（任意のFOVに設定） -->
-    <a-entity camera id="camera"></a-entity>
-  </a-scene>
+    <!-- カメラ（AR.js専用のカメラを利用することでズーム問題を回避） -->
+    <a-marker-camera></a-marker-camera>
 
-  <script>
-    document.querySelector('#scene').addEventListener('loaded', () => {
-      const camera = document.querySelector('#camera').getObject3D('camera');
-      if (camera) {
-        camera.fov = 70; // 好みの画角
-        camera.updateProjectionMatrix();
-      }
-    });
-  </script>
+  </a-scene>
 </body>
 </html>
