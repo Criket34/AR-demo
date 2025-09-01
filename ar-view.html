@@ -2,29 +2,55 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>オブジェクト右回転サンプル</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR.js + A-Frame サンプル（スマホ用 見栄え優先・FOV固定）</title>
+  <!-- ★ viewport を Android 用に強化指定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+    maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densityDpi=device-dpi">
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- AR.js for A-Frame -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
 </head>
-<body>
-  <a-scene>
-    <!-- 照明 -->
-    <a-entity light="type: directional; intensity: 1" position="1 1 1"></a-entity>
-    <a-entity light="type: ambient; intensity: 0.5"></a-entity>
+<body style="margin: 0; overflow: hidden;">
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true;"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+  >
 
-    <!-- カメラ -->
-    <a-entity position="0 1.6 3">
-      <a-camera></a-camera>
-    </a-entity>
+    <!-- マーカー -->
+    <a-marker type="pattern" url="doki-color.patt">
+      <!-- ★ モデルを包むラッパーを追加して回転オフセットを調整 -->
+      <a-entity look-at="[camera]">
+        <a-entity
+          gltf-model="url(doki-color.glb)"
+          scale="3 3 3"
+          position="0 0 0"
+          rotation="0 90 0"> <!-- ← この rotation を調整して正面を合わせる -->
+        </a-entity>
+      </a-entity>
+    </a-marker>
 
-    <!-- GLBモデルを右回転させる -->
-    <a-entity id="my-model"
-              gltf-model="url(model.glb)"
-              position="0 0 -2"
-              rotation="0 0 0"
-              scale="1 1 1"
-              animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear">
-    </a-entity>
+    <!-- カメラ（FOVを常に80に固定する） -->
+    <a-entity id="myCamera" camera lock-fov="fov: 80"></a-entity>
+
   </a-scene>
+
+  <script>
+  // FOV固定コンポーネント
+  AFRAME.registerComponent('lock-fov', {
+    schema: { fov: { default: 80 } }, // ← 任意のFOVを指定
+    tick: function () {
+      const cam = this.el.getObject3D('camera');
+      if (cam && cam.isPerspectiveCamera) {
+        if (cam.fov !== this.data.fov) {
+          cam.fov = this.data.fov;
+          cam.updateProjectionMatrix();
+        }
+      }
+    }
+  });
+  </script>
 </body>
 </html>
