@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js + A-Frame サンプル（スマホ用・FOV固定 + スワイプ回転）</title>
+  <title>AR.js + A-Frame（スワイプで任意軸回転）</title>
   <!-- ★ viewport を Android 用に強化指定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
     maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densityDpi=device-dpi">
@@ -11,7 +11,7 @@
   <!-- AR.js for A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
 </head>
-<body style="margin: 0; overflow: hidden;">
+<body style="margin: 0; overflow: hidden; touch-action: none;">
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
@@ -26,7 +26,8 @@
         gltf-model="url(doki-color.glb)"
         scale="3 3 3"
         position="0 0 0"
-        rotation="45 180 0">
+        rotation="45 180 0"
+        rotate-on-swipe="axis: z; sensitivity: 0.5">
       </a-entity>
     </a-marker>
 
@@ -50,36 +51,96 @@
     }
   });
 
-  // -------------------------------
-  // スワイプでモデルを回転させる処理
-  // -------------------------------
-  const model = document.getElementById("myModel");
+  // スワイプで任意軸回転
+  AFRAME.registerComponent('rotate-on-swipe', {
+    schema: {
+      axis: { default: 'y' },         // 'x' | 'y' | 'z'
+      sensitivity: { default: 0.5 }   // 回転の感度
+    },
+    init: function () {
+      this.isDragging = false;
+      this.lastX = 0;
+      this.lastY = 0;
 
-  let isDragging = false;
-  let lastX = 0;
-  let currentRotationY = 180; // 初期値は <a-entity rotation="45 180 0"> に合わせる
+      // 現在の回転を保持
+      const r = this.el.getAttribute('rotation') || {x:0,y:0,z:0};
+      this.rot = { x: r.x, y: r.y, z: r.z };
 
-  document.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 1) {
-      isDragging = true;
-      lastX = e.touches[0].clientX;
+      // バインド
+      this._onTouchStart = this.onTouchStart.bind(this);
+      this._onTouchMove  = this.onTouchMove.bind(this);
+      this._onTouchEnd   = this.onTouchEnd.bind(this);
+      this._onMouseDown  = this.onMouseDown.bind(this);
+      this._onMouseMove  = this.onMouseMove.bind(this);
+      this._onMouseUp    = this.onMouseUp.bind(this);
+
+      document.addEventListener('touchstart', this._onTouchStart, {passive:false});
+      document.addEventListener('touchmove',  this._onTouchMove,  {passive:false});
+      document.addEventListener('touchend',   this._onTouchEnd);
+      document.addEventListener('mousedown',  this._onMouseDown);
+      document.addEventListener('mousemove',  this._onMouseMove);
+      document.addEventListener('mouseup',    this._onMouseUp);
+    },
+    remove: function () {
+      document.removeEventListener('touchstart', this._onTouchStart);
+      document.removeEventListener('touchmove',  this._onTouchMove);
+      document.removeEventListener('touchend',   this._onTouchEnd);
+      document.removeEventListener('mousedown',  this._onMouseDown);
+      document.removeEventListener('mousemove',  this._onMouseMove);
+      document.removeEventListener('mouseup',    this._onMouseUp);
+    },
+    applyDelta: function (dx, dy) {
+      // 軸ごとに直感的な方向に
+      let delta = 0;
+      if (this.data.axis === 'x') {
+        delta = -dy * this.data.sensitivity; // 縦スワイプでX回転
+        this.rot.x += delta;
+      } else if (this.data.axis === 'y') {
+        delta = dx * this.data.sensitivity;  // 横スワイプでY回転
+        this.rot.y += delta;
+      } else { // 'z'
+        delta = dx * this.data.sensitivity;  // 横スワイプでZ回転
+        this.rot.z += delta;
+      }
+      this.el.setAttribute('rotation', `${this.rot.x} ${this.rot.y} ${this.rot.z}`);
+    },
+    onTouchStart: function (e) {
+      if (e.touches.length !== 1) return;
+      this.isDragging = true;
+      this.lastX = e.touches[0].clientX;
+      this.lastY = e.touches[0].clientY;
+      e.preventDefault();
+    },
+    onTouchMove: function (e) {
+      if (!this.isDragging || e.touches.length !== 1) return;
+      const x = e.touches[0].clientX;
+      const y = e.touches[0].clientY;
+      const dx = x - this.lastX;
+      const dy = y - this.lastY;
+      this.lastX = x;
+      this.lastY = y;
+      this.applyDelta(dx, dy);
+      e.preventDefault();
+    },
+    onTouchEnd: function () {
+      this.isDragging = false;
+    },
+    onMouseDown: function (e) {
+      this.isDragging = true;
+      this.lastX = e.clientX;
+      this.lastY = e.clientY;
+    },
+    onMouseMove: function (e) {
+      if (!this.isDragging) return;
+      const dx = e.clientX - this.lastX;
+      const dy = e.clientY - this.lastY;
+      this.lastX = e.clientX;
+      this.lastY = e.clientY;
+      this.applyDelta(dx, dy);
+    },
+    onMouseUp: function () {
+      this.isDragging = false;
     }
-  });
-
-  document.addEventListener("touchmove", (e) => {
-    if (isDragging && e.touches.length === 1) {
-      const deltaX = e.touches[0].clientX - lastX;
-      lastX = e.touches[0].clientX;
-
-      // 感度調整（0.5を変更すると回転の速さが変わります）
-      currentRotationY += deltaX * 0.5;
-
-      model.setAttribute("rotation", `45 ${currentRotationY} 0`);
-    }
-  });
-
-  document.addEventListener("touchend", () => {
-    isDragging = false;
   });
   </script>
 </body>
