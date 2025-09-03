@@ -1,19 +1,63 @@
-<a-marker type="pattern" url="doki-color.patt">
-  <a-entity
-    id="myModel"
-    gltf-model="url(doki-color.glb)"
-    scale="3 3 3"
-    position="0 0 0"
-    rotation="45 180 0"
-  ></a-entity>
-</a-marker>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>AR.js + A-Frame サンプル（スマホ用・FOV固定 + スワイプ回転）</title>
+  <!-- ★ viewport を Android 用に強化指定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+    maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densityDpi=device-dpi">
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- AR.js for A-Frame -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true;"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+  >
 
-<script>
+    <!-- マーカー -->
+    <a-marker type="pattern" url="doki-color.patt">
+      <a-entity
+        id="myModel"
+        gltf-model="url(doki-color.glb)"
+        scale="3 3 3"
+        position="0 0 0"
+        rotation="45 180 0">
+      </a-entity>
+    </a-marker>
+
+    <!-- カメラ（FOVを常に80に固定する） -->
+    <a-entity id="myCamera" camera lock-fov="fov: 80"></a-entity>
+
+  </a-scene>
+
+  <script>
+  // FOV固定コンポーネント
+  AFRAME.registerComponent('lock-fov', {
+    schema: { fov: { default: 80 } },
+    tick: function () {
+      const cam = this.el.getObject3D('camera');
+      if (cam && cam.isPerspectiveCamera) {
+        if (cam.fov !== this.data.fov) {
+          cam.fov = this.data.fov;
+          cam.updateProjectionMatrix();
+        }
+      }
+    }
+  });
+
+  // -------------------------------
+  // スワイプでモデルを回転させる処理
+  // -------------------------------
   const model = document.getElementById("myModel");
 
   let isDragging = false;
   let lastX = 0;
-  let currentRotationY = 180; // 初期値をモデルの rotation に合わせる
+  let currentRotationY = 180; // 初期値は <a-entity rotation="45 180 0"> に合わせる
 
   document.addEventListener("touchstart", (e) => {
     if (e.touches.length === 1) {
@@ -27,7 +71,7 @@
       const deltaX = e.touches[0].clientX - lastX;
       lastX = e.touches[0].clientX;
 
-      // 画面移動量を回転に変換（感度は適宜調整）
+      // 感度調整（0.5を変更すると回転の速さが変わります）
       currentRotationY += deltaX * 0.5;
 
       model.setAttribute("rotation", `45 ${currentRotationY} 0`);
@@ -37,4 +81,6 @@
   document.addEventListener("touchend", () => {
     isDragging = false;
   });
-</script>
+  </script>
+</body>
+</html>
