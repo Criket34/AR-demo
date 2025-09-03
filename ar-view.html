@@ -21,13 +21,17 @@
     arjs="sourceType: webcam; debugUIEnabled: false;"
   >
     <a-marker type="pattern" url="doki-color.patt">
-      <a-entity
-        id="myModel"
-        gltf-model="url(doki-color.glb)"
-        scale="3 3 3"
-        position="0 0 0"
-        rotation="45 180 0"
-        rotate-on-swipe="sensitivity: 0.5">
+      <!-- マーカー追従は wrapper まで -->
+      <a-entity id="wrapper">
+        <!-- 実際にスワイプで回したいモデル -->
+        <a-entity
+          id="myModel"
+          gltf-model="url(doki-color.glb)"
+          scale="3 3 3"
+          position="0 0 0"
+          rotation="45 180 0"
+          rotate-on-swipe="sensitivity: 0.5">
+        </a-entity>
       </a-entity>
     </a-marker>
 
@@ -35,13 +39,14 @@
   </a-scene>
 
   <script>
-  // A-Frame が完全に読み込まれてからコンポーネントを登録する
+  // A-Frame が完全に読み込まれてからコンポーネントを登録
   window.addEventListener('load', function () {
     if (!window.AFRAME) {
       console.error('AFRAME not found after window.load — check network / script order.');
       return;
     }
 
+    // FOV固定
     AFRAME.registerComponent('lock-fov', {
       schema: { fov: { default: 80 } },
       tick: function () {
@@ -55,6 +60,7 @@
       }
     });
 
+    // スワイプでX/Y回転
     AFRAME.registerComponent('rotate-on-swipe', {
       schema: { sensitivity: { default: 0.5 } },
       init: function () {
@@ -70,7 +76,6 @@
         this._onMouseMove  = this.onMouseMove.bind(this);
         this._onMouseUp    = this.onMouseUp.bind(this);
 
-        // 簡潔さのため document にリスナ登録（安定動作）
         document.addEventListener('touchstart', this._onTouchStart, {passive:false});
         document.addEventListener('touchmove',  this._onTouchMove,  {passive:false});
         document.addEventListener('touchend',   this._onTouchEnd);
@@ -87,7 +92,7 @@
         document.removeEventListener('mouseup',    this._onMouseUp);
       },
       applyDelta: function (dx, dy) {
-        // 横スワイプ -> Y回転、縦スワイプ -> X回転。必要ならZ回転も追加可能
+        // 横スワイプ -> Y回転、縦スワイプ -> X回転
         this.rot.y += dx * this.data.sensitivity;
         this.rot.x += -dy * this.data.sensitivity;
         this.el.setAttribute('rotation', `${this.rot.x} ${this.rot.y} ${this.rot.z}`);
@@ -122,7 +127,6 @@
       },
       onMouseUp: function () { this.isDragging = false; }
     });
-
   });
   </script>
 </body>
