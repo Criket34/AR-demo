@@ -2,34 +2,18 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js + A-Frame（iPad対応・スワイプ操作）</title>
+  <title>AR.js + A-Frame（スワイプ操作対応）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
     maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <!-- AR.js for A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
-
   <style>
-    body { margin: 0; overflow: hidden; touch-action: none; background: black; }
-    #permissionBtn {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 1em 2em;
-      font-size: 1.2em;
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      display: none; /* iOSのみ表示 */
-    }
+    body { margin: 0; overflow: hidden; touch-action: none; }
   </style>
 </head>
 <body>
-  <button id="permissionBtn">センサー許可を有効にする</button>
-
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
@@ -38,11 +22,13 @@
   >
     <!-- マーカー -->
     <a-marker type="pattern" url="doki-color.patt">
+      <!-- wrapper: マーカー追従 -->
       <a-entity id="wrapper" position="0 0 0">
+        <!-- モデル: スワイプ操作で回転 -->
         <a-entity
           id="myModel"
           gltf-model="url(doki-color.glb)"
-          scale="4 4 4"
+          scale="3 3 3"
           rotation="45 180 0"
           rotate-on-swipe="sensitivity: 0.5">
         </a-entity>
@@ -54,28 +40,7 @@
   </a-scene>
 
   <script>
-  // --- iOS Safari センサー許可処理 ---
-  window.addEventListener('load', () => {
-    if (typeof DeviceMotionEvent !== "undefined" &&
-        typeof DeviceMotionEvent.requestPermission === "function") {
-      const btn = document.getElementById("permissionBtn");
-      btn.style.display = "block";
-      btn.addEventListener("click", async () => {
-        try {
-          const response = await DeviceMotionEvent.requestPermission();
-          if (response === "granted") {
-            btn.style.display = "none";
-          } else {
-            alert("センサーアクセスが拒否されました。Safariの設定を確認してください。");
-          }
-        } catch (e) {
-          alert("センサー許可のリクエストに失敗しました: " + e);
-        }
-      });
-    }
-  });
-
-  // --- FOV固定 ---
+  // FOV固定コンポーネント
   AFRAME.registerComponent('lock-fov', {
     schema: { fov: { default: 80 } },
     tick: function () {
@@ -89,7 +54,7 @@
     }
   });
 
-  // --- スワイプでモデル回転 ---
+  // スワイプで X/Y 回転
   AFRAME.registerComponent('rotate-on-swipe', {
     schema: { sensitivity: { default: 0.5 } },
     init: function () {
@@ -121,8 +86,8 @@
       document.removeEventListener('mouseup',    this._onMouseUp);
     },
     applyDelta: function (dx, dy) {
-      this.rot.y += dx * this.data.sensitivity;  
-      this.rot.x += -dy * this.data.sensitivity; 
+      this.rot.y += dx * this.data.sensitivity;  // 横スワイプ -> Y回転
+      this.rot.x += -dy * this.data.sensitivity; // 縦スワイプ -> X回転
       this.el.setAttribute('rotation', `${this.rot.x} ${this.rot.y} ${this.rot.z}`);
     },
     onTouchStart: function (e) {
