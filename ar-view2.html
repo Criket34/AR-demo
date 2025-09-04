@@ -2,27 +2,162 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>MindAR AR Demo</title>
-  <link rel="stylesheet" href="ar-view2.css">
+  <title>AR.js + A-Frame（iOS対応・スワイプ操作）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; touch-action: none; }
+    #startButton {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 1em 2em;
+      font-size: 1.2em;
+      z-index: 1000;
+    }
+  </style>
 </head>
 <body>
-  <div id="control">
-    <button id="startButton">Start</button>
-    <button id="stopButton">Stop</button>
-  </div>
-  <div id="container"></div>
+  <button id="startButton">AR開始</button>
 
-  <!-- three.js & mind-ar を ESM で読み込む -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.module.js"
+  <script>
+  // iOS判定
+  function isiOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  async function requestIOSPermissions() {
+    if (isiOS()) {
+      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+        try { await DeviceMotionEvent.requestPermission(); } catch(e) { console.warn(e); }
+      }
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+        try { await DeviceOrientationEvent.requestPermission(); } catch(e) { console.warn(e); }
+      }
     }
   }
-  </script>
 
-  <!-- 自作スクリプトをモジュールとして読み込む -->
-  <script type="module" src="ar-view2.js"></script>
+  document.getElementById("startButton").addEventListener("click", async () => {
+    await requestIOSPermissions();
+    document.getElementById("startButton").style.display = "none";
+
+    // --- ここでA-Frameシーンを生成 ---
+    const scene = document.createElement("a-scene");
+    scene.setAttribute("embedded", "");
+    scene.setAttribute("vr-mode-ui", "enabled: false");
+    scene.setAttribute("renderer", "logarithmicDepthBuffer: true;");
+    scene.setAttribute("arjs", "sourceType: webcam; debugUIEnabled: false;");
+
+    // マーカー
+    const marker = document.createElement("a-marker");
+    marker.setAttribute("type", "pattern");
+    marker.setAttribute("url", "doki-color.patt");
+
+    // wrapper
+    const wrapper = document.createElement("a-entity");
+    wrapper.setAttribute("id", "wrapper");
+    wrapper.setAttribute("position", "0 0 0");
+
+    // モデル
+    const model = document.createElement("a-entity");
+    model.setAttribute("id", "myModel");
+    model.setAttribute("gltf-model", "url(doki-color.glb)");
+    model.setAttribute("scale", "3 3 3");
+    model.setAttribute("rotation", "45 180 0");
+    model.setAttribute("rotate-on-swipe", "sensitivity: 0.5");
+
+    wrapper.appendChild(model);
+    marker.appendChild(wrapper);
+    scene.appendChild(marker);
+
+    // カメラ
+    const camera = document.createElement("a-entity");
+    camera.setAttribute("camera", "");
+    camera.setAttribute("lock-fov", "fov: 80");
+    scene.appendChild(camera);
+
+    document.body.appendChild(scene);
+  });
+
+  // FOV固定
+  AFRAME.registerComponent('lock-fov', {
+    schema: { fov: { default: 80 } },
+    tick: function () {
+      const cam = this.el.getObject3D('camera');
+      if (cam && cam.isPerspectiveCamera && cam.fov !== this.data.fov) {
+        cam.fov = this.data.fov;
+        cam.updateProjectionMatrix();
+      }
+    }
+  });
+
+  // スワイプで回転
+  AFRAME.registerComponent('rotate-on-swipe', {
+    schema: { sensitivity: { default: 0.5 } },
+    init: function () {
+      this.isDragging = false;
+      this.lastX = 0; this.lastY = 0;
+      const r = this.el.getAttribute('rotation') || { x:0,y:0,z:0 };
+      this.rot = { x: r.x, y: r.y, z: r.z };
+
+      this._onTouchStart = this.onTouchStart.bind(this);
+      this._onTouchMove  = this.onTouchMove.bind(this);
+      this._onTouchEnd   = this.onTouchEnd.bind(this);
+      this._onMouseDown  = this.onMouseDown.bind(this);
+      this._onMouseMove  = this.onMouseMove.bind(this);
+      this._onMouseUp    = this.onMouseUp.bind(this);
+
+      document.addEventListener('touchstart', this._onTouchStart, {passive:false});
+      document.addEventListener('touchmove',  this._onTouchMove,  {passive:false});
+      document.addEventListener('touchend',   this._onTouchEnd);
+      document.addEventListener('mousedown',  this._onMouseDown);
+      document.addEventListener('mousemove',  this._onMouseMove);
+      document.addEventListener('mouseup',    this._onMouseUp);
+    },
+    remove: function () {
+      document.removeEventListener('touchstart', this._onTouchStart);
+      document.removeEventListener('touchmove',  this._onTouchMove);
+      document.removeEventListener('touchend',   this._onTouchEnd);
+      document.removeEventListener('mousedown',  this._onMouseDown);
+      document.removeEventListener('mousemove',  this._onMouseMove);
+      document.removeEventListener('mouseup',    this._onMouseUp);
+    },
+    applyDelta: function (dx, dy) {
+      this.rot.y += dx * this.data.sensitivity;
+      this.rot.x += -dy * this.data.sensitivity;
+      this.el.setAttribute('rotation', `${this.rot.x} ${this.rot.y} ${this.rot.z}`);
+    },
+    onTouchStart: function (e) {
+      if (!e.touches || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      this.isDragging = true;
+      this.lastX = t.clientX; this.lastY = t.clientY;
+      e.preventDefault();
+    },
+    onTouchMove: function (e) {
+      if (!this.isDragging || !e.touches || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const dx = t.clientX - this.lastX;
+      const dy = t.clientY - this.lastY;
+      this.lastX = t.clientX; this.lastY = t.clientY;
+      this.applyDelta(dx, dy);
+      e.preventDefault();
+    },
+    onTouchEnd: function () { this.isDragging = false; },
+    onMouseDown: function (e) {
+      this.isDragging = true;
+      this.lastX = e.clientX; this.lastY = e.clientY;
+    },
+    onMouseMove: function (e) {
+      if (!this.isDragging) return;
+      const dx = e.clientX - this.lastX;
+      const dy = e.clientY - this.lastY;
+      this.lastX = e.clientX; this.lastY = e.clientY;
+      this.applyDelta(dx, dy);
+    },
+    onMouseUp: function () { this.isDragging = false; }
+  });
+  </script>
 </body>
 </html>
