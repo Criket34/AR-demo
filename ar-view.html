@@ -2,15 +2,19 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js + A-Frame（スワイプ操作対応）</title>
+  <title>AR.js + A-Frame（iPad対応・スワイプ操作）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
     maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <!-- AR.js for A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar-nft.js"></script>
+  <!-- iOS Safari 用: デバイス方向センサー許可UI -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe-device-orientation-permission-ui@1.0.0/dist/aframe-device-orientation-permission-ui.min.js"></script>
+
   <style>
-    body { margin: 0; overflow: hidden; touch-action: none; }
+    body { margin: 0; overflow: hidden; touch-action: none; background: black; }
   </style>
 </head>
 <body>
@@ -19,12 +23,12 @@
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true;"
     arjs="sourceType: webcam; debugUIEnabled: false;"
+    device-orientation-permission-ui="enabled: true"
   >
     <!-- マーカー -->
     <a-marker type="pattern" url="doki-color.patt">
-      <!-- wrapper: マーカー追従 -->
       <a-entity id="wrapper" position="0 0 0">
-        <!-- モデル: スワイプ操作で回転 -->
+        <!-- GLBモデル（スワイプで回転） -->
         <a-entity
           id="myModel"
           gltf-model="url(doki-color.glb)"
@@ -40,7 +44,7 @@
   </a-scene>
 
   <script>
-  // FOV固定コンポーネント
+  // --- FOV固定 ---
   AFRAME.registerComponent('lock-fov', {
     schema: { fov: { default: 80 } },
     tick: function () {
@@ -54,7 +58,7 @@
     }
   });
 
-  // スワイプで X/Y 回転
+  // --- スワイプでモデル回転 ---
   AFRAME.registerComponent('rotate-on-swipe', {
     schema: { sensitivity: { default: 0.5 } },
     init: function () {
@@ -123,4 +127,3 @@
   </script>
 </body>
 </html>
-
