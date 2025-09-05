@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AR.js + A-Frame（スワイプ操作対応）</title>
+  <title>AR.js + A-Frame（スワイプ操作対応・複数オブジェクト）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
     maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 
@@ -27,19 +27,27 @@
     renderer="logarithmicDepthBuffer: true;"
     arjs="sourceType: webcam; debugUIEnabled: false;"
   >
-    <!-- マーカー -->
+    <!-- doki-color -->
     <a-marker type="pattern" url="doki-color.patt">
-      <!-- マーカーに追従するwrapper -->
-      <a-entity id="wrapper" position="0 0 0">
-        <!-- GLBモデル（スワイプで回転） -->
+      <a-entity position="0 0 0">
         <a-entity
-          id="myModel"
           gltf-model="url(doki-color.glb)"
           scale="4 4 4"
           rotation="45 180 0"
           rotate-on-swipe="sensitivity: 0.5"
-        >
-        </a-entity>
+        ></a-entity>
+      </a-entity>
+    </a-marker>
+
+    <!-- zyukyo -->
+    <a-marker type="pattern" url="zyukyo.patt">
+      <a-entity position="0 0 0">
+        <a-entity
+          gltf-model="url(zyukyo.glb)"
+          scale="4 4 4"
+          rotation="0 180 0"
+          rotate-on-swipe="sensitivity: 0.5"
+        ></a-entity>
       </a-entity>
     </a-marker>
 
